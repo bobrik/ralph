@@ -8,8 +8,10 @@ import (
 	"github.com/bobrik/marathoner"
 )
 
+// twemproxyConfig is a bunch of twemproxy pools
 type twemproxyConfig map[string]twemproxyPool
 
+// twemproxyPool represents configuration for twemproxyPool
 type twemproxyPool struct {
 	Listen             string            `yaml:"listen"`
 	Hash               string            `yaml:"hash"`
@@ -26,6 +28,7 @@ type twemproxyPool struct {
 	Servers            []twemproxyServer `yaml:"servers"`
 }
 
+// twemproxyServer represents server in twemproxy config
 type twemproxyServer struct {
 	Host   string
 	Port   int
@@ -37,6 +40,7 @@ func (s twemproxyServer) MarshalYAML() (interface{}, error) {
 	return fmt.Sprintf("%s:%d:%d %s", s.Host, s.Port, s.Weight, s.Name), nil
 }
 
+// newPoolFromApp creates new twemproxy pool from marathoner application
 func newPoolFromApp(app marathoner.App, bind string) (twemproxyPool, error) {
 	pool := twemproxyPool{
 		Servers: []twemproxyServer{},
@@ -101,6 +105,7 @@ func newPoolFromApp(app marathoner.App, bind string) (twemproxyPool, error) {
 	return pool, nil
 }
 
+// fetchInt fetches int from string field of a map if possible
 func fetchInt(source map[string]string, field string, destination *int) error {
 	if v, ok := source[field]; ok {
 		f, err := strconv.Atoi(v)
@@ -114,12 +119,14 @@ func fetchInt(source map[string]string, field string, destination *int) error {
 	return nil
 }
 
+// fetchString fetches string value from a map if it exists
 func fetchString(source map[string]string, field string, destination *string) {
 	if v, ok := source[field]; ok {
 		*destination = v
 	}
 }
 
+// fetchBool fetches bool from string field of a map if possible
 func fetchBool(source map[string]string, field string, destination *bool) {
 	if v, ok := source[field]; ok && (v == "true" || v == "1") {
 		*destination = true

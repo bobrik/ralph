@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// TwemproxyConfigurator implements ConfiguratorImplementation for twemproxy
 type TwemproxyConfigurator struct {
 	state twemproxyConfig
 	mutex sync.Mutex
@@ -21,6 +22,8 @@ type TwemproxyConfigurator struct {
 	pid   int
 }
 
+// NewTwemproxyConfigurator creates configurator with specified config path,
+// bind address and extra args for twemproxy
 func NewTwemproxyConfigurator(conf string, bind string, args []string) *TwemproxyConfigurator {
 	return &TwemproxyConfigurator{
 		state: nil,
@@ -31,6 +34,7 @@ func NewTwemproxyConfigurator(conf string, bind string, args []string) *Twemprox
 	}
 }
 
+// Update runs update and logs an error if it happens
 func (t *TwemproxyConfigurator) Update(s marathoner.State, r *bool) error {
 	err := t.update(s, r)
 	if err != nil {
@@ -40,6 +44,7 @@ func (t *TwemproxyConfigurator) Update(s marathoner.State, r *bool) error {
 	return err
 }
 
+// update runs all steps to perform configuration update and reload
 func (t *TwemproxyConfigurator) update(s marathoner.State, r *bool) error {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -82,6 +87,7 @@ func (t *TwemproxyConfigurator) update(s marathoner.State, r *bool) error {
 	return nil
 }
 
+// updateConfig updates yaml config or twemproxy
 func (t *TwemproxyConfigurator) updateConfig() error {
 	c, err := yaml.Marshal(t.state)
 	if err != nil {
@@ -100,10 +106,12 @@ func (t *TwemproxyConfigurator) updateConfig() error {
 	return err
 }
 
+// checkConfig checks if config looks good for twemproxy
 func (t *TwemproxyConfigurator) checkConfig() error {
 	return exec.Command("nutcracker", "-t", "-c", t.conf).Run()
 }
 
+// reload sends SIGUSR1 to twemproxy to reload config
 func (t *TwemproxyConfigurator) reload() error {
 	if t.pid == 0 {
 		log.Println("twemproxy is not started yet, starting")
@@ -122,6 +130,7 @@ func (t *TwemproxyConfigurator) reload() error {
 	return err
 }
 
+// runTwemproxy starts twemproxy process
 func (t *TwemproxyConfigurator) runTwemproxy() error {
 	args := append([]string{"-c", "/etc/nutcracker.yml"}, t.args...)
 	cmd := exec.Command("nutcracker", args...)
@@ -137,6 +146,7 @@ func (t *TwemproxyConfigurator) runTwemproxy() error {
 	return nil
 }
 
+// stateToPools converts marathoner state to twemproxy config
 func stateToPools(s marathoner.State, bind string) twemproxyConfig {
 	c := map[string]twemproxyPool{}
 
