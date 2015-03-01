@@ -25,7 +25,7 @@ Ralph is pretty lightweight to run it on every node.
 
 ## Adding pools
 
-Your pools are managed my [marathon](https://mesosphere.github.io/marathon/),
+Your pools are managed by [marathon](https://mesosphere.github.io/marathon/),
 here is an example of a pool:
 
 
